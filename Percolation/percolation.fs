@@ -3,28 +3,23 @@
 open System
 
 type Site = Closed | Open | Full
-type Grid = Site [,]
+type PercolationModel = array<int*Site> * int
 
-let createGrid n =
-    if n <= 0 then raise (ArgumentException())
-    Array2D.create n n Closed
+let createModel n : PercolationModel =
+    let last = n*n+1
+    let ids = [|0..last|] |> Array.map (fun i -> (i,Closed))
+    Array.set ids 0 (0,Open)
+    Array.set ids last (last,Open)
+    ids,n
 
+let validate i j n =
+    if i <= 0 || j <= 0 || i > n || j > n then raise (new ArgumentException())
 
-let validate i j grid =
-    let n = Array2D.length1 grid
-    let m = Array2D.length2 grid
-    if m <> n then raise (ArgumentException("Percolation grid must be square"))
-    if i < 0 || j < 0 || i >= n || j >= n then raise (ArgumentOutOfRangeException())
-
-
-let openSite i j grid =
-    validate i j grid
-    Array2D.set grid i j Open
-    grid
-
-
-let isOpen i j grid =
-    validate i j grid
-    grid.[i,j] = Open
-
+let openSite i j model =
+    let n = snd model
+    validate i j n
+    let ids = fst model
+    let index = (i-1)*n + j
+    Array.set ids index (index, Open)
+    ids,n
 

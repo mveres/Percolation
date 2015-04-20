@@ -6,41 +6,29 @@ open percolation
 open System
 
 
-[<Test; ExpectedException(typeof<ArgumentException>)>]
-let ``createGrid with n <= 0 throws invalid argument`` () =
-    createGrid -1 |> ignore
+[<Test>]
+let ``Create 2 x 2 percolation grid creates 0,,5 id array`` ()=
+    let expected = [|(0, Open); (1, Closed); (2, Closed); (3, Closed); (4, Closed); (5, Open)|]
+    let model = createModel 2
+    model |> fst |> should equal expected
+    model |> snd |> should equal 2
 
 
-[<TestCase(1)>]
-[<TestCase(13)>]
-let ``createGrid n creates a nxn grid with closed sites`` n =
-    let expectedGrid = Array2D.create n n Closed
-    createGrid n |> should equal expectedGrid
-
-
-[<Test; ExpectedException(typeof<ArgumentOutOfRangeException>)>]
-let ``openSite params should be >= 0`` () =
-    let grid = createGrid 3
-    openSite -1 2 grid |> ignore
-
-
-[<Test; ExpectedException(typeof<ArgumentOutOfRangeException>)>]
-let ``openSite params should be < n`` () =
-    let grid = createGrid 3
-    openSite 0 3 grid |> ignore
+[<TestCase(0, 0)>]
+[<TestCase(-1, 1)>]
+[<TestCase(1, -1)>]
+[<TestCase(2, 3)>]
+let ``Given invalid params When open is called Then it throws argument exception`` i j =
+    (fun () -> openSite i j (createModel 2)|> ignore)
+    |> should throw typeof<ArgumentException>
 
 
 [<Test>]
-let ``openSite i,j should open only the [i,j] site `` () =
-    let initialGrid = createGrid 2
-    let expectedGrid = createGrid 2
-    Array2D.set expectedGrid 1 1 Open
-    openSite 1 1 initialGrid |> should equal expectedGrid
-
+let ``Given 2 x 2 percolation grid When opening (2,1) Then (2,1) is open`` () =
+    let expected = [|(0, Open); (1, Closed); (2, Closed); (3, Open); (4, Closed); (5, Open)|]
+    openSite 2 1 (createModel 2) |> snd |> should equal expected
 
 [<Test>]
-let ``isOpen should work`` () =
-    let grid = openSite 1 1 (createGrid 2)
-    isOpen 1 1 grid |> should be True
-    isOpen 0 0 grid |> should be False
-
+let ``Given 2 x 2 percolation grid When opening (1,2) Then (1,2) is open`` () =
+    let expected = [|(0, Open); (1, Closed); (2, Open); (3, Closed); (4, Closed); (5, Open)|]
+    (openSite 2 1 (createModel 2) |> fst).[2] |> snd |>  should equal Open
